@@ -1,0 +1,40 @@
+# LLM / AI assistant files
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.claudeignore
+AGENTS.md
+GEMINI.md
+.gemini/
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.github/copilot-instructions.md
+.aider*
+.continue/
+.codex/
+.clinerules
+.roo/
+.mcp.json
+memory/
+MEMORY.md
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / tooling (if ever added)
+node_modules/
+dist/
+.env
+.env.*
+*.log
