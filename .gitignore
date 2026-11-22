@@ -21,6 +21,14 @@ GEMINI.md
 memory/
 MEMORY.md
 
+# Design-skill working files (impeccable, ui-ux-pro-max)
+PRODUCT.md
+DESIGN.md
+DESIGN.json
+.impeccable/
+design-system/
+.ui-ux-pro-max/
+
 # Editors
 .vscode/
 .idea/
