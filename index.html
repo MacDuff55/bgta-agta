@@ -2,398 +2,630 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0714">
-<title id="pageTitle">B.GTA Calendar</title>
+<meta name="description" content="B.GTA / A.GTA calendar: counts the days to and since the release of GTA VI.">
+<title>B.GTA Calendar</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffd23d'/%3E%3Cstop offset='.6' stop-color='%23ff3d9a'/%3E%3Cstop offset='1' stop-color='%2321e6ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='28' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-deep:#0a0714;
-    --bg-panel:#170f28;
-    --bg-panel-hi:#20152f;
+    --bg-panel:rgba(28,18,48,.72);
+    --bg-panel-solid:#170f28;
+    --bg-cell:rgba(255,255,255,.035);
+    --bg-cell-hi:rgba(255,255,255,.08);
     --pink:#ff3d9a;
     --cyan:#21e6ff;
     --orange:#ff7a3d;
+    --gold:#ffd23d;
     --text:#f3ecff;
     --muted:#9c8fc2;
-    --line:#2c1f42;
+    --line:rgba(156,143,194,.18);
+    --radius:18px;
+    --ease:cubic-bezier(.2,.8,.2,1);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0;}
   body{
-    background:var(--bg-deep);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,61,154,.16), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(33,230,255,.12), transparent 60%),
+      var(--bg-deep);
+    background-attachment:fixed;
     color:var(--text);
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Space Grotesk', system-ui, sans-serif;
     min-height:100vh;
-    padding-bottom:env(safe-area-inset-bottom);
+    min-height:100dvh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     overflow-x:hidden;
   }
-  .app{ max-width:480px; margin:0 auto; }
+  .app{
+    max-width:1080px; margin:0 auto; padding:16px;
+    display:grid; gap:16px;
+  }
+  @media (min-width:880px){
+    .app{ grid-template-columns:minmax(340px, 420px) 1fr; align-items:start; padding:32px 24px; gap:24px; }
+    .hero{ position:sticky; top:24px; }
+  }
+
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    -webkit-backdrop-filter:blur(14px);
+    backdrop-filter:blur(14px);
+  }
 
   /* ---------- HERO ---------- */
   .hero{
     position:relative;
-    padding:38px 20px 28px;
+    padding:30px 20px 22px;
     text-align:center;
     overflow:hidden;
-    background:linear-gradient(180deg, #1a0b2e 0%, #170f28 55%, var(--bg-deep) 100%);
-    border-bottom:1px solid var(--line);
+    isolation:isolate;
+    background:linear-gradient(180deg, #1d0c33 0%, #170f28 60%, rgba(23,15,40,.9) 100%);
+  }
+  .topbar{
+    position:relative; z-index:3;
+    display:flex; justify-content:space-between; align-items:center;
+    margin:-12px -6px 10px;
+  }
+  .chip{
+    font-size:12px; font-weight:600; letter-spacing:.04em;
+    padding:6px 10px; border-radius:999px;
+    background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--muted);
+  }
+  .chip .live{
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:var(--pink); margin-right:6px; vertical-align:1px;
+    box-shadow:0 0 8px var(--pink);
+    animation:pulse 2s ease-in-out infinite;
   }
   .sun{
-    position:absolute;
-    top:-70px; left:50%; transform:translateX(-50%);
-    width:220px; height:220px; border-radius:50%;
-    background:linear-gradient(180deg, #ffd23d, var(--pink) 55%, var(--cyan) 100%);
-    opacity:.5; filter:blur(2px);
+    position:absolute; z-index:-1;
+    top:-60px; left:50%; transform:translateX(-50%);
+    width:240px; height:240px; border-radius:50%;
+    background:linear-gradient(180deg, var(--gold), var(--pink) 58%, #8a2bff 100%);
+    -webkit-mask:linear-gradient(180deg, #000 55%, transparent 55%), repeating-linear-gradient(180deg, #000 0 10px, transparent 10px 15px);
+    mask:linear-gradient(180deg, #000 55%, transparent 55%), repeating-linear-gradient(180deg, #000 0 10px, transparent 10px 15px);
+    opacity:.45;
+    filter:drop-shadow(0 0 40px rgba(255,61,154,.5));
   }
   .grid-floor{
-    position:absolute; left:0; right:0; bottom:-40px; height:150px;
+    position:absolute; z-index:-1; left:-20%; right:-20%; bottom:-50px; height:170px;
     background-image:
-      repeating-linear-gradient(90deg, rgba(33,230,255,.35) 0 1px, transparent 1px 40px),
-      repeating-linear-gradient(0deg, rgba(255,61,154,.28) 0 1px, transparent 1px 22px);
-    transform:perspective(220px) rotateX(58deg);
-    opacity:.6;
-  }
-  .hero-content{ position:relative; z-index:2; }
-  .eyebrow{
-    font-size:13px; letter-spacing:.04em; color:var(--muted); margin:0 0 6px;
+      repeating-linear-gradient(90deg, rgba(33,230,255,.38) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(0deg, rgba(255,61,154,.3) 0 1px, transparent 1px 22px);
+    transform:perspective(220px) rotateX(60deg);
+    -webkit-mask:linear-gradient(0deg, #000 30%, transparent);
+    mask:linear-gradient(0deg, #000 30%, transparent);
+    opacity:.55;
+    animation:drive 1.6s linear infinite;
   }
   .wordmark{
-    font-family:'Anton', sans-serif;
-    font-style:italic;
-    font-size:15px;
-    letter-spacing:.06em;
+    font-family:'Anton', sans-serif; font-style:italic;
+    font-size:18px; letter-spacing:.08em;
     color:var(--cyan);
-    text-shadow:0 0 14px rgba(33,230,255,.5);
-    margin:0 0 2px;
+    text-shadow:0 0 14px rgba(33,230,255,.55);
+    margin:0;
   }
   .hero-number{
-    font-family:'Anton', sans-serif;
-    font-style:italic;
-    font-size:96px;
+    font-family:'Anton', sans-serif; font-style:italic;
+    font-size:clamp(88px, 26vw, 128px);
     line-height:.95;
-    margin:2px 0 0;
-    background:linear-gradient(180deg, #fff, var(--pink) 85%);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    text-shadow:0 0 30px rgba(255,61,154,.25);
+    margin:4px 0 0;
+    background:linear-gradient(180deg, #fff 10%, var(--pink) 90%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 24px rgba(255,61,154,.3));
+    font-variant-numeric:tabular-nums;
   }
-  .hero-sub{
-    font-size:15px; color:var(--text); margin:6px 0 0; font-weight:500;
+  .hero-sub{ font-size:16px; margin:6px 0 0; font-weight:600; }
+  .clock{
+    display:flex; justify-content:center; gap:8px; margin:14px 0 0;
+    font-variant-numeric:tabular-nums;
   }
-  .hero-date{
-    font-size:13px; color:var(--muted); margin:4px 0 0;
+  .clock[hidden]{ display:none; }
+  .clock div{
+    min-width:58px; padding:8px 6px 6px; border-radius:12px;
+    background:rgba(10,7,20,.55); border:1px solid var(--line);
   }
-  .hero-note{
-    font-size:12px; color:var(--muted); margin:14px 0 0; opacity:.75;
+  .clock b{ display:block; font-family:'Anton', sans-serif; font-size:24px; font-weight:400; color:var(--cyan); }
+  .clock span{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .stats{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:18px 0 0;
   }
+  .stat{
+    padding:10px 6px; border-radius:12px;
+    background:rgba(10,7,20,.5); border:1px solid var(--line);
+  }
+  .stat b{ display:block; font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .stat span{ font-size:11px; color:var(--muted); }
+  .hero-date{ font-size:13px; color:var(--muted); margin:16px 0 0; }
+  .hero-note{ font-size:12px; color:var(--muted); margin:6px 0 0; opacity:.7; }
 
-  /* ---------- CONTROLS ---------- */
+  /* ---------- CALENDAR PANEL ---------- */
+  .cal-panel{ padding:16px 12px 12px; }
   .controls{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 16px 8px;
-    gap:8px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:0 4px 12px;
   }
-  .month-label{
-    font-size:17px; font-weight:700; letter-spacing:.01em;
-  }
-  .nav-buttons{ display:flex; gap:6px; }
+  .month-label{ font-size:20px; font-weight:700; letter-spacing:.01em; }
+  .month-label small{ display:block; font-size:12px; font-weight:500; color:var(--muted); margin-top:2px; }
+  .nav{ display:flex; gap:6px; align-items:center; }
   button{
-    font-family:inherit; border:1px solid var(--line); background:var(--bg-panel);
-    color:var(--text); border-radius:10px; cursor:pointer;
+    font-family:inherit; border:1px solid var(--line); background:var(--bg-cell);
+    color:var(--text); border-radius:12px; cursor:pointer;
+    transition:background .2s var(--ease), border-color .2s var(--ease), transform .1s var(--ease);
   }
-  .nav-btn{ width:38px; height:38px; font-size:16px; }
-  .nav-btn:active{ background:var(--bg-panel-hi); }
-  .today-btn{
-    font-size:13px; padding:8px 12px; color:var(--cyan); border-color:rgba(33,230,255,.35);
-  }
-  .today-btn:active{ background:rgba(33,230,255,.1); }
+  button:hover{ background:var(--bg-cell-hi); }
+  button:active{ transform:scale(.96); }
   button:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .icon-btn{ width:40px; height:40px; font-size:18px; display:grid; place-items:center; }
+  .pill-btn{ font-size:13px; font-weight:600; padding:9px 12px; }
+  .pill-btn.cyan{ color:var(--cyan); border-color:rgba(33,230,255,.35); }
+  .pill-btn.gold{ color:var(--gold); border-color:rgba(255,210,61,.35); }
+  .lang-btn{ font-size:12px; font-weight:700; padding:6px 10px; border-radius:999px; letter-spacing:.06em; }
 
-  /* ---------- CALENDAR ---------- */
-  .weekdays{
-    display:grid; grid-template-columns:repeat(7,1fr);
-    padding:4px 12px; gap:6px;
-  }
-  .weekdays span{
-    text-align:center; font-size:11px; color:var(--muted); font-weight:600;
-  }
-  .calendar{
-    display:grid; grid-template-columns:repeat(7,1fr);
-    gap:6px; padding:0 12px 8px;
-  }
+  .weekdays, .calendar{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .weekdays{ padding:0 0 6px; }
+  .weekdays span{ text-align:center; font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+  .weekdays span:nth-child(n+6){ color:rgba(255,61,154,.75); }
+  .calendar{ touch-action:pan-y; }
+  .calendar.slide-left{ animation:slideL .28s var(--ease); }
+  .calendar.slide-right{ animation:slideR .28s var(--ease); }
+
   .day{
     position:relative;
     aspect-ratio:1;
     border-radius:12px;
-    background:var(--bg-panel);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:var(--bg-cell);
     border:1px solid transparent;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:0; font:inherit; color:inherit;
   }
-  .day.empty{ background:transparent; }
-  .day .num{ font-size:14px; font-weight:600; }
-  .day .badge{
-    font-size:9.5px; font-weight:700; letter-spacing:.02em; margin-top:2px;
-  }
+  .day.empty{ background:transparent; pointer-events:none; }
+  .day.weekend{ background:rgba(255,61,154,.045); }
+  .day .num{ font-size:15px; font-weight:600; }
+  .day .badge{ font-size:10px; font-weight:700; letter-spacing:.02em; margin-top:2px; opacity:.9; }
   .day.before .badge{ color:var(--cyan); }
   .day.after .badge{ color:var(--pink); }
-  .day.today{ border-color:var(--orange); box-shadow:0 0 0 1px var(--orange), 0 0 14px rgba(255,122,61,.35); }
-  .day.release{
-    background:linear-gradient(160deg, rgba(255,122,61,.25), rgba(255,61,154,.25));
-    border-color:var(--orange);
+  .day.past .num{ opacity:.55; }
+  .day.milestone::after{
+    content:''; position:absolute; top:6px; right:6px;
+    width:6px; height:6px; border-radius:50%;
+    background:var(--gold); box-shadow:0 0 8px var(--gold);
   }
-  .day.release .num{ color:#ffd23d; }
-  .day.release .badge{ color:#ffd23d; }
+  .day.today{ border-color:var(--orange); box-shadow:0 0 0 1px var(--orange), 0 0 16px rgba(255,122,61,.4); }
+  .day.release{
+    background:linear-gradient(160deg, rgba(255,122,61,.35), rgba(255,61,154,.35));
+    border-color:var(--gold);
+    box-shadow:0 0 22px rgba(255,210,61,.25);
+  }
+  .day.release .num, .day.release .badge{ color:var(--gold); }
+  .day.selected{ outline:2px solid var(--cyan); outline-offset:1px; }
+
+  .detail{
+    margin:12px 0 0; padding:12px 14px; border-radius:14px;
+    background:rgba(10,7,20,.5); border:1px solid var(--line);
+    font-size:14px; min-height:46px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .detail .tag{
+    font-weight:700; font-size:12px; padding:4px 8px; border-radius:8px; flex:none;
+    background:rgba(33,230,255,.12); color:var(--cyan);
+  }
+  .detail .tag.after{ background:rgba(255,61,154,.14); color:var(--pink); }
+  .detail .tag.release{ background:rgba(255,210,61,.14); color:var(--gold); }
 
   /* ---------- LEGEND ---------- */
   .legend{
-    margin:18px 16px 28px;
-    padding:16px;
-    background:var(--bg-panel);
-    border:1px solid var(--line);
-    border-radius:14px;
-    font-size:13px;
-    color:var(--muted);
-    line-height:1.55;
+    margin:12px 0 0; padding:14px;
+    border-radius:14px; border:1px solid var(--line);
+    font-size:13px; color:var(--muted); line-height:1.55;
+    display:grid; gap:8px;
   }
   .legend b{ color:var(--text); }
-  .legend-row{ display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
-  .legend-row:last-child{ margin-bottom:0; }
+  .legend-row{ display:flex; align-items:flex-start; gap:10px; }
   .dot{ width:9px; height:9px; border-radius:50%; margin-top:5px; flex:none; }
   .dot.cyan{ background:var(--cyan); }
   .dot.pink{ background:var(--pink); }
-  .dot.orange{ background:#ffd23d; }
+  .dot.gold{ background:var(--gold); box-shadow:0 0 8px var(--gold); }
+  .hint{ font-size:12px; color:var(--muted); opacity:.7; text-align:center; margin:12px 0 2px; }
+
+  @keyframes pulse{ 50%{ opacity:.35; } }
+  @keyframes drive{ to{ background-position:0 22px, 0 22px; } }
+  @keyframes slideL{ from{ opacity:0; transform:translateX(18px); } }
+  @keyframes slideR{ from{ opacity:0; transform:translateX(-18px); } }
+  @media (prefers-reduced-motion:reduce){
+    *, *::before, *::after{ animation:none !important; transition:none !important; }
+  }
+  @media (hover:none){ .hint .kbd{ display:none; } }
 </style>
 </head>
 <body>
-<div class="app">
+<main class="app">
 
-  <div class="hero">
-    <div class="sun"></div>
-    <div class="grid-floor"></div>
-    <div class="hero-content">
-      <p class="eyebrow" id="eyebrowText">Today</p>
-      <p class="wordmark" id="heroWordmark">B.GTA</p>
-      <p class="hero-number" id="heroNumber">--</p>
-      <p class="hero-sub" id="heroSub">calculating…</p>
-      <p class="hero-date" id="heroDateLine">GTA VI release date: November 19, 2026</p>
-      <p class="hero-note" id="heroNote">(Rockstar's latest announced date — no promises it won't change again 👀)</p>
+  <section class="hero panel" aria-live="polite">
+    <div class="sun" aria-hidden="true"></div>
+    <div class="grid-floor" aria-hidden="true"></div>
+    <div class="topbar">
+      <span class="chip"><span class="live"></span><span id="todayChip">—</span></span>
+      <button class="lang-btn" id="langBtn" type="button">TR</button>
     </div>
-  </div>
-
-  <div class="controls">
-    <div class="nav-buttons">
-      <button class="nav-btn" id="prevBtn" aria-label="Previous month">‹</button>
-      <button class="nav-btn" id="nextBtn" aria-label="Next month">›</button>
+    <p class="wordmark" id="heroWordmark">B.GTA</p>
+    <p class="hero-number" id="heroNumber">--</p>
+    <p class="hero-sub" id="heroSub">…</p>
+    <div class="clock" id="clock" hidden>
+      <div><b id="clkH">00</b><span id="lblH">hrs</span></div>
+      <div><b id="clkM">00</b><span id="lblM">min</span></div>
+      <div><b id="clkS">00</b><span id="lblS">sec</span></div>
     </div>
-    <div class="month-label" id="monthLabel">—</div>
-    <button class="today-btn" id="todayBtn">Today</button>
-  </div>
+    <div class="stats">
+      <div class="stat"><b id="statWeeks">–</b><span id="lblWeeks">weeks</span></div>
+      <div class="stat"><b id="statMonths">–</b><span id="lblMonths">months</span></div>
+      <div class="stat"><b id="statNext">–</b><span id="lblNext">next milestone</span></div>
+    </div>
+    <p class="hero-date" id="heroDateLine"></p>
+    <p class="hero-note" id="heroNote"></p>
+  </section>
 
-  <div class="weekdays" id="weekdaysRow"></div>
-  <div class="calendar" id="calendar"></div>
+  <section class="cal-panel panel">
+    <div class="controls">
+      <div class="month-label" id="monthLabel">—</div>
+      <div class="nav">
+        <button class="icon-btn" id="prevBtn" type="button">‹</button>
+        <button class="icon-btn" id="nextBtn" type="button">›</button>
+      </div>
+    </div>
+    <div class="controls" style="padding-top:0">
+      <button class="pill-btn cyan" id="todayBtn" type="button">Today</button>
+      <button class="pill-btn gold" id="releaseBtn" type="button">GTA Day</button>
+    </div>
 
-  <div class="legend">
-    <div class="legend-row"><span class="dot" id="legendDot"></span><span><b id="legendLabel">—</b> — <span id="legendDesc">calculating…</span></span></div>
-    <div class="legend-row"><span class="dot orange"></span><span id="legendTransition">On release day, the counter flips to A.GTA and keeps counting from there.</span></div>
-    <div class="legend-row"><span class="dot orange"></span><span><b id="legendReleaseLabel">GTA Day</b> — <span id="legendReleaseDesc">November 19, 2026 — release day.</span></span></div>
-  </div>
+    <div class="weekdays" id="weekdaysRow" aria-hidden="true"></div>
+    <div class="calendar" id="calendar" role="grid"></div>
 
-</div>
+    <div class="detail" id="detail"></div>
+
+    <div class="legend">
+      <div class="legend-row"><span class="dot cyan"></span><span id="legendBefore"></span></div>
+      <div class="legend-row"><span class="dot pink"></span><span id="legendAfter"></span></div>
+      <div class="legend-row"><span class="dot gold"></span><span id="legendMilestone"></span></div>
+    </div>
+    <p class="hint" id="hint"></p>
+  </section>
+
+</main>
 
 <script>
 (function(){
-  const RELEASE = new Date(2026, 10, 19); // November 19, 2026
+  const RELEASE = new Date(2026, 10, 19); // November 19, 2026, local midnight
+  const DAY_MS = 86400000;
 
   const translations = {
     en: {
+      locale: 'en-US',
       title: 'B.GTA Calendar',
-      today: 'Today',
+      langSwitch: 'TR',
       releaseDateLine: 'GTA VI release date: November 19, 2026',
       releaseNote: "(Rockstar's latest announced date — no promises it won't change again 👀)",
       prevAria: 'Previous month',
       nextAria: 'Next month',
       todayBtn: 'Today',
+      releaseBtn: 'GTA Day',
       weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-      months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+      clock: ['hrs','min','sec'],
+      weeks: 'weeks', months: 'months', nextMilestone: 'next milestone',
       gtaDayWordmark: 'GTA DAY',
-      gtaDayEmoji: '🎮',
       gtaDaySub: "It's out today!",
       beforeSub: n => n === 1 ? '1 day until GTA 6' : `${n} days until GTA 6`,
       afterSub: n => n === 1 ? '1 day since GTA 6 launched' : `${n} days since GTA 6 launched`,
-      legendBeforeDesc: n => n === 1 ? 'GTA 6 releases in 1 day.' : `GTA 6 releases in ${n} days.`,
-      legendAfterDesc: n => n === 1 ? "It's been 1 day since GTA 6 released." : `It's been ${n} days since GTA 6 released.`,
-      legendGtaDayDesc: 'GTA 6 comes out today!',
-      legendGtaDayLabel: 'GTA Day',
-      legendTransition: 'On release day, the counter flips to A.GTA and keeps counting from there.',
-      legendReleaseLabel: 'GTA Day',
-      legendReleaseDesc: 'November 19, 2026 — release day.'
+      detailBefore: n => n === 1 ? '1 day before release' : `${n} days before release`,
+      detailAfter: n => n === 1 ? '1 day after release' : `${n} days after release`,
+      detailRelease: 'Release day 🎮',
+      milestone: 'milestone',
+      monthSummary: (a, b) => a === b ? a : `${a} → ${b}`,
+      legendBefore: '<b>B.GTA</b> — days left until release',
+      legendAfter: '<b>A.GTA</b> — days since release; the counter flips on release day',
+      legendMilestone: '<b>Milestones</b> — every 100 days and every anniversary',
+      hint: 'Tap a day for details · swipe to change month<span class="kbd"> · ← → keys</span>'
     },
     tr: {
+      locale: 'tr-TR',
       title: 'B.GTA Takvimi',
-      today: 'Bugün',
+      langSwitch: 'EN',
       releaseDateLine: 'GTA VI çıkış tarihi: 19 Kasım 2026',
       releaseNote: "(Rockstar'ın son açıkladığı tarih — değişmeyeceğine dair hiçbir garanti yok 👀)",
       prevAria: 'Önceki ay',
       nextAria: 'Sonraki ay',
       todayBtn: 'Bugün',
+      releaseBtn: 'GTA Günü',
       weekdays: ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'],
-      months: ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+      clock: ['saat','dk','sn'],
+      weeks: 'hafta', months: 'ay', nextMilestone: 'sonraki dönüm',
       gtaDayWordmark: 'GTA GÜNÜ',
-      gtaDayEmoji: '🎮',
       gtaDaySub: 'Bugün çıkıyor!',
       beforeSub: n => n === 1 ? "GTA 6'ya 1 gün kaldı" : `GTA 6'ya ${n} gün kaldı`,
       afterSub: n => n === 1 ? 'GTA 6 çıkalı 1 gün oldu' : `GTA 6 çıkalı ${n} gün oldu`,
-      legendBeforeDesc: n => n === 1 ? 'GTA 6 çıkışına 1 gün var.' : `GTA 6 çıkışına ${n} gün var.`,
-      legendAfterDesc: n => n === 1 ? 'GTA 6 çıkalı 1 gün oldu.' : `GTA 6 çıkalı ${n} gün oldu.`,
-      legendGtaDayDesc: 'Bugün GTA 6 çıkıyor!',
-      legendGtaDayLabel: 'GTA Günü',
-      legendTransition: "GTA 6 çıktığı gün sayaç A.GTA'ya döner ve o günden itibaren saymaya devam eder.",
-      legendReleaseLabel: 'GTA Günü',
-      legendReleaseDesc: '19 Kasım 2026 — çıkış günü.'
+      detailBefore: n => `Çıkışa ${n} gün var`,
+      detailAfter: n => `Çıkıştan ${n} gün sonra`,
+      detailRelease: 'Çıkış günü 🎮',
+      milestone: 'dönüm noktası',
+      monthSummary: (a, b) => a === b ? a : `${a} → ${b}`,
+      legendBefore: '<b>B.GTA</b> — çıkışa kalan gün sayısı',
+      legendAfter: '<b>A.GTA</b> — çıkıştan bu yana geçen gün; sayaç çıkış günü döner',
+      legendMilestone: '<b>Dönüm noktaları</b> — her 100 gün ve her yıl dönümü',
+      hint: 'Ayrıntı için bir güne dokun · ay değiştirmek için kaydır<span class="kbd"> · ← → tuşları</span>'
     }
   };
 
-  const rawLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
-  const lang = rawLang.startsWith('tr') ? 'tr' : 'en';
-  const t = translations[lang];
-  document.documentElement.lang = lang;
-  document.title = t.title;
+  function readLang(){
+    try {
+      const saved = localStorage.getItem('bgta-lang');
+      if (saved === 'en' || saved === 'tr') return saved;
+    } catch (e) {}
+    const raw = (navigator.language || 'en').toLowerCase();
+    return raw.startsWith('tr') ? 'tr' : 'en';
+  }
+  let lang = readLang();
+  let t = translations[lang];
 
-  function stripTime(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-  function diffDays(a, b){ return Math.round((stripTime(a) - stripTime(b)) / 86400000); }
-  function mondayIndex(jsDay){ return (jsDay + 6) % 7; } // JS: 0=Sun -> shift so Monday=0
+  const $ = id => document.getElementById(id);
+  const stripTime = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = (a, b) => Math.round((stripTime(a) - stripTime(b)) / DAY_MS);
+  const mondayIndex = jsDay => (jsDay + 6) % 7;
+  const pad = n => String(n).padStart(2, '0');
 
-  const today = new Date();
+  function isMilestone(diff){
+    const n = Math.abs(diff);
+    if (n === 0) return false;
+    if (n % 100 === 0) return true;
+    return diff < 0 && isAnniversary(new Date(RELEASE.getFullYear(), RELEASE.getMonth(), RELEASE.getDate() - diff));
+  }
+  function isAnniversary(date){
+    return date.getMonth() === RELEASE.getMonth() && date.getDate() === RELEASE.getDate() && date.getFullYear() > RELEASE.getFullYear();
+  }
+  function nextMilestoneDays(diff){
+    if (diff > 0) return diff % 100 === 0 ? 100 : diff % 100;
+    const since = -diff;
+    let best = 100 - (since % 100);
+    const nextAnniv = new Date(today.getFullYear(), RELEASE.getMonth(), RELEASE.getDate());
+    if (nextAnniv <= stripTime(today)) nextAnniv.setFullYear(nextAnniv.getFullYear() + 1);
+    best = Math.min(best, diffDays(nextAnniv, today));
+    return best;
+  }
+
+  let today = new Date();
   let viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  let selected = stripTime(today);
 
   function applyStaticText(){
-    document.getElementById('eyebrowText').textContent = t.today;
-    document.getElementById('heroDateLine').textContent = t.releaseDateLine;
-    document.getElementById('heroNote').textContent = t.releaseNote;
-    document.getElementById('prevBtn').setAttribute('aria-label', t.prevAria);
-    document.getElementById('nextBtn').setAttribute('aria-label', t.nextAria);
-    document.getElementById('todayBtn').textContent = t.todayBtn;
-    document.getElementById('legendTransition').textContent = t.legendTransition;
-    document.getElementById('legendReleaseLabel').textContent = t.legendReleaseLabel;
-    document.getElementById('legendReleaseDesc').textContent = t.legendReleaseDesc;
+    document.documentElement.lang = lang;
+    document.title = t.title;
+    $('langBtn').textContent = t.langSwitch;
+    $('langBtn').setAttribute('aria-label', lang === 'en' ? 'Türkçe' : 'English');
+    $('heroDateLine').textContent = t.releaseDateLine;
+    $('heroNote').textContent = t.releaseNote;
+    $('prevBtn').setAttribute('aria-label', t.prevAria);
+    $('nextBtn').setAttribute('aria-label', t.nextAria);
+    $('todayBtn').textContent = t.todayBtn;
+    $('releaseBtn').textContent = t.releaseBtn;
+    $('lblH').textContent = t.clock[0];
+    $('lblM').textContent = t.clock[1];
+    $('lblS').textContent = t.clock[2];
+    $('lblWeeks').textContent = t.weeks;
+    $('lblMonths').textContent = t.months;
+    $('lblNext').textContent = t.nextMilestone;
+    $('legendBefore').innerHTML = t.legendBefore;
+    $('legendAfter').innerHTML = t.legendAfter;
+    $('legendMilestone').innerHTML = t.legendMilestone;
+    $('hint').innerHTML = t.hint;
 
-    const weekdaysRow = document.getElementById('weekdaysRow');
-    weekdaysRow.innerHTML = '';
-    t.weekdays.forEach(function(day){
-      const span = document.createElement('span');
-      span.textContent = day;
-      weekdaysRow.appendChild(span);
+    const row = $('weekdaysRow');
+    row.innerHTML = '';
+    t.weekdays.forEach(d => {
+      const s = document.createElement('span');
+      s.textContent = d;
+      row.appendChild(s);
     });
   }
 
+  function monthsBetween(a, b){
+    let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+    if (b.getDate() < a.getDate()) m--;
+    return Math.max(0, m);
+  }
+
   function renderStatus(){
-    const diff = diffDays(RELEASE, today); // positive = before release
-    const wordmark = document.getElementById('heroWordmark');
-    const number = document.getElementById('heroNumber');
-    const sub = document.getElementById('heroSub');
-    const legendDot = document.getElementById('legendDot');
-    const legendLabel = document.getElementById('legendLabel');
-    const legendDesc = document.getElementById('legendDesc');
+    const now = new Date();
+    const diff = diffDays(RELEASE, now);
+    $('todayChip').textContent = now.toLocaleDateString(t.locale, { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+
+    const wordmark = $('heroWordmark'), number = $('heroNumber'), sub = $('heroSub');
+    const clock = $('clock');
 
     if (diff > 0){
       wordmark.textContent = 'B.GTA';
       number.textContent = diff;
       sub.textContent = t.beforeSub(diff);
-      legendDot.className = 'dot cyan';
-      legendLabel.textContent = 'B.GTA ' + diff;
-      legendDesc.textContent = t.legendBeforeDesc(diff);
+      const ms = RELEASE - now;
+      clock.hidden = false;
+      $('clkH').textContent = pad(Math.floor(ms / 3600000) % 24);
+      $('clkM').textContent = pad(Math.floor(ms / 60000) % 60);
+      $('clkS').textContent = pad(Math.floor(ms / 1000) % 60);
+      $('statWeeks').textContent = Math.floor(diff / 7);
+      $('statMonths').textContent = monthsBetween(stripTime(now), RELEASE);
     } else if (diff === 0){
       wordmark.textContent = t.gtaDayWordmark;
-      number.textContent = t.gtaDayEmoji;
+      number.textContent = '🎮';
       sub.textContent = t.gtaDaySub;
-      legendDot.className = 'dot orange';
-      legendLabel.textContent = t.legendGtaDayLabel;
-      legendDesc.textContent = t.legendGtaDayDesc;
+      clock.hidden = true;
+      $('statWeeks').textContent = 0;
+      $('statMonths').textContent = 0;
     } else {
       wordmark.textContent = 'A.GTA';
       number.textContent = -diff;
       sub.textContent = t.afterSub(-diff);
-      legendDot.className = 'dot pink';
-      legendLabel.textContent = 'A.GTA ' + (-diff);
-      legendDesc.textContent = t.legendAfterDesc(-diff);
+      clock.hidden = true;
+      $('statWeeks').textContent = Math.floor(-diff / 7);
+      $('statMonths').textContent = monthsBetween(RELEASE, stripTime(now));
     }
+    $('statNext').textContent = diff === 0 ? '—' : nextMilestoneDays(diff) + (lang === 'tr' ? ' gün' : 'd');
   }
 
-  function renderCalendar(){
-    const cal = document.getElementById('calendar');
-    const label = document.getElementById('monthLabel');
+  function describe(date){
+    const diff = diffDays(RELEASE, date);
+    const label = date.toLocaleDateString(t.locale, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    let cls, tag, text;
+    if (diff === 0){ cls = 'release'; tag = 'GTA'; text = t.detailRelease; }
+    else if (diff > 0){ cls = ''; tag = 'B.GTA ' + diff; text = t.detailBefore(diff); }
+    else { cls = 'after'; tag = 'A.GTA ' + (-diff); text = t.detailAfter(-diff); }
+    if (isMilestone(diff)) text += ' · ★ ' + t.milestone;
+    const el = $('detail');
+    el.innerHTML = '';
+    const tg = document.createElement('span');
+    tg.className = 'tag ' + cls;
+    tg.textContent = tag;
+    const tx = document.createElement('span');
+    tx.innerHTML = '<b></b><br><span style="color:var(--muted);font-size:13px"></span>';
+    tx.querySelector('b').textContent = label;
+    tx.querySelector('span').textContent = text;
+    el.append(tg, tx);
+  }
+
+  function renderCalendar(direction){
+    const cal = $('calendar');
     cal.innerHTML = '';
-
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-    label.textContent = `${t.months[month]} ${year}`;
-
-    const firstOfMonth = new Date(year, month, 1);
+    const year = viewDate.getFullYear(), month = viewDate.getMonth();
+    const first = new Date(year, month, 1);
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const leadingBlanks = mondayIndex(firstOfMonth.getDay());
+    const last = new Date(year, month, daysInMonth);
 
-    for (let i = 0; i < leadingBlanks; i++){
+    const monthName = first.toLocaleDateString(t.locale, { month:'long', year:'numeric' });
+    const tagFor = d => { const x = diffDays(RELEASE, d); return x === 0 ? 'GTA' : (x > 0 ? 'B' + x : 'A' + (-x)); };
+    $('monthLabel').innerHTML = '';
+    $('monthLabel').append(monthName.charAt(0).toUpperCase() + monthName.slice(1));
+    const small = document.createElement('small');
+    small.textContent = t.monthSummary(tagFor(first), tagFor(last));
+    $('monthLabel').appendChild(small);
+
+    for (let i = 0; i < mondayIndex(first.getDay()); i++){
       const blank = document.createElement('div');
       blank.className = 'day empty';
       cal.appendChild(blank);
     }
 
+    const todayStripped = stripTime(today);
     for (let d = 1; d <= daysInMonth; d++){
       const cellDate = new Date(year, month, d);
       const diff = diffDays(RELEASE, cellDate);
-
-      const cell = document.createElement('div');
+      const cell = document.createElement('button');
+      cell.type = 'button';
       cell.className = 'day';
+      cell.setAttribute('role', 'gridcell');
+      cell.dataset.day = d;
+
+      const wd = mondayIndex(cellDate.getDay());
+      if (wd >= 5) cell.classList.add('weekend');
+      if (cellDate < todayStripped) cell.classList.add('past');
 
       const num = document.createElement('span');
       num.className = 'num';
       num.textContent = d;
-      cell.appendChild(num);
-
       const badge = document.createElement('span');
       badge.className = 'badge';
 
-      if (diff === 0){
-        cell.classList.add('release');
-        badge.textContent = 'GTA';
-      } else if (diff > 0){
-        cell.classList.add('before');
-        badge.textContent = 'B' + diff;
-      } else {
-        cell.classList.add('after');
-        badge.textContent = 'A' + (-diff);
-      }
-      cell.appendChild(badge);
+      if (diff === 0){ cell.classList.add('release'); badge.textContent = 'GTA'; }
+      else if (diff > 0){ cell.classList.add('before'); badge.textContent = 'B' + diff; }
+      else { cell.classList.add('after'); badge.textContent = 'A' + (-diff); }
+      if (isMilestone(diff)) cell.classList.add('milestone');
+      if (+cellDate === +todayStripped){ cell.classList.add('today'); cell.setAttribute('aria-current', 'date'); }
+      if (+cellDate === +selected) cell.classList.add('selected');
 
-      if (diffDays(cellDate, today) === 0){
-        cell.classList.add('today');
-      }
-
+      cell.setAttribute('aria-label', cellDate.toLocaleDateString(t.locale, { day:'numeric', month:'long', year:'numeric' }) + ', ' + badge.textContent);
+      cell.append(num, badge);
       cal.appendChild(cell);
     }
+
+    if (direction){
+      cal.classList.remove('slide-left', 'slide-right');
+      void cal.offsetWidth;
+      cal.classList.add(direction > 0 ? 'slide-left' : 'slide-right');
+    }
+
+    if (selected.getFullYear() === year && selected.getMonth() === month) describe(selected);
+    else describe(first);
   }
 
-  document.getElementById('prevBtn').addEventListener('click', function(){
-    viewDate.setMonth(viewDate.getMonth() - 1);
-    renderCalendar();
+  function shiftMonth(delta){
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + delta, 1);
+    renderCalendar(delta);
+  }
+  function goTo(date){
+    const target = new Date(date.getFullYear(), date.getMonth(), 1);
+    const delta = Math.sign(target - viewDate);
+    viewDate = target;
+    selected = stripTime(date);
+    renderCalendar(delta);
+  }
+
+  $('calendar').addEventListener('click', e => {
+    const cell = e.target.closest('.day:not(.empty)');
+    if (!cell) return;
+    selected = new Date(viewDate.getFullYear(), viewDate.getMonth(), +cell.dataset.day);
+    $('calendar').querySelectorAll('.selected').forEach(c => c.classList.remove('selected'));
+    cell.classList.add('selected');
+    describe(selected);
   });
-  document.getElementById('nextBtn').addEventListener('click', function(){
-    viewDate.setMonth(viewDate.getMonth() + 1);
-    renderCalendar();
+  $('prevBtn').addEventListener('click', () => shiftMonth(-1));
+  $('nextBtn').addEventListener('click', () => shiftMonth(1));
+  $('todayBtn').addEventListener('click', () => goTo(today));
+  $('releaseBtn').addEventListener('click', () => goTo(RELEASE));
+  $('langBtn').addEventListener('click', () => {
+    lang = lang === 'en' ? 'tr' : 'en';
+    t = translations[lang];
+    try { localStorage.setItem('bgta-lang', lang); } catch (e) {}
+    applyStaticText();
+    renderStatus();
+    renderCalendar(0);
   });
-  document.getElementById('todayBtn').addEventListener('click', function(){
-    viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    renderCalendar();
+
+  document.addEventListener('keydown', e => {
+    if (e.target.closest('input, textarea')) return;
+    if (e.key === 'ArrowLeft') shiftMonth(-1);
+    else if (e.key === 'ArrowRight') shiftMonth(1);
+    else if (e.key === 't' || e.key === 'T') goTo(today);
   });
+
+  let touchX = null, touchY = null;
+  const calEl = $('calendar');
+  calEl.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, { passive:true });
+  calEl.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+    touchX = touchY = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) shiftMonth(dx < 0 ? 1 : -1);
+  });
+
+  // Re-render when the date rolls over at midnight
+  setInterval(() => {
+    const now = new Date();
+    if (now.getDate() !== today.getDate() || now.getMonth() !== today.getMonth()){
+      today = now;
+      renderCalendar(0);
+    }
+    renderStatus();
+  }, 1000);
 
   applyStaticText();
   renderStatus();
-  renderCalendar();
+  renderCalendar(0);
 })();
 </script>
 </body>
