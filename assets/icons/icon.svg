@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a0f45"/>
+      <stop offset="1" stop-color="#0a0714"/>
+    </linearGradient>
+    <linearGradient id="sun" gradientUnits="userSpaceOnUse" x1="0" y1="86" x2="0" y2="386">
+      <stop offset="0" stop-color="#ffd23d"/>
+      <stop offset=".6" stop-color="#ff3d9a"/>
+      <stop offset="1" stop-color="#8a2bff"/>
+    </linearGradient>
+    <clipPath id="c"><circle cx="256" cy="236" r="150"/></clipPath>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <g clip-path="url(#c)" fill="url(#sun)">
+    <rect x="106" y="86" width="300" height="150"/>
+    <rect x="106" y="246" width="300" height="22"/>
+    <rect x="106" y="280" width="300" height="17"/>
+    <rect x="106" y="309" width="300" height="13"/>
+    <rect x="106" y="334" width="300" height="9"/>
+    <rect x="106" y="355" width="300" height="6"/>
+  </g>
+  <g stroke="#21e6ff" stroke-opacity=".55" stroke-width="4">
+    <path d="M60 400H452M30 432H482M0 470H512"/>
+    <path d="M256 400V512M200 400 150 512M312 400 362 512M144 400 44 512M368 400 468 512"/>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+{
+  "name": "B.GTA Calendar",
+  "short_name": "B.GTA",
+  "description": "Time, re-dated around GTA VI: B.GTA before release, A.GTA after.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0714",
+  "theme_color": "#0a0714",
+  "categories": ["entertainment", "lifestyle"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
